@@ -99,7 +99,7 @@ export default function PasswordAnalyzer() {
 }
 
 /* ===================== */
-/* ESTILOS */
+/* STYLES */
 /* ===================== */
 
 const styles: Record<string, React.CSSProperties> = {
