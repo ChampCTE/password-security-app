@@ -4,8 +4,8 @@
 
 import React, { useMemo, useState } from "react";
 import zxcvbn from "zxcvbn-ts";
+import { tokens } from "@/app/page";
 
-// SVG Icon Components
 const ErrorIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: "15px", height: "15px", flexShrink: 0, marginTop: "2px" }}>
     <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.29 13.71a1 1 0 0 1-1.42 0L12 13.41l-2.88 2.88a1 1 0 0 1-1.42-1.42L10.59 12 7.7 9.12a1 1 0 1 1 1.42-1.42L12 10.59l2.88-2.88a1 1 0 0 1 1.42 1.42L13.41 12l2.88 2.88a1 1 0 0 1 0 1.42z"/>
@@ -36,9 +36,11 @@ const HideIcon = () => (
   </svg>
 );
 
-export default function PasswordAnalyzer() {
+export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const t = dark ? tokens.dark : tokens.light;
 
   const result = useMemo(() => zxcvbn(password), [password]);
   const score = result.score;
@@ -76,43 +78,85 @@ export default function PasswordAnalyzer() {
     }
   };
 
-  const getColor = (s: number) => {
+  const getStrengthColor = (s: number) => {
     switch (s) {
       case 0: case 1: return "#E24B4A";
       case 2: return "#EF9F27";
-      case 3: return "#2563EB";
+      case 3: return dark ? "#22C55E" : "#2563EB";
       case 4: return "#16A34A";
-      default: return "#CBD5E1";
+      default: return t.border;
     }
   };
 
   const issues = getIssues(password);
   const advice = getAdvice(password);
 
-  return (
-    <div style={styles.container}>
+  const card: React.CSSProperties = {
+    background: t.cardBg,
+    border: `1px solid ${t.border}`,
+    borderRadius: "12px",
+    padding: "1.1rem 1.25rem",
+    marginBottom: "0.875rem",
+    transition: "background 0.3s, border-color 0.3s",
+  };
 
-      <h1 style={styles.title}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "22px", height: "22px", color: "#2563EB" }}>
+  const fieldLabel: React.CSSProperties = {
+    fontSize: "11px",
+    fontWeight: 600,
+    color: t.sectionTitle,
+    margin: "0 0 6px",
+    textTransform: "uppercase",
+    letterSpacing: "0.07em",
+  };
+
+  return (
+    <div style={{ maxWidth: "620px", margin: "0 auto", padding: "1.5rem", fontFamily: "system-ui, sans-serif" }}>
+
+      <h1 style={{ fontSize: "20px", fontWeight: 600, display: "flex", alignItems: "center", gap: "10px", marginBottom: "1.25rem", color: t.textPrimary, transition: "color 0.3s" }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "22px", height: "22px", color: t.accent }}>
           <path fill="currentColor" d="M416 160C416 124.7 444.7 96 480 96C515.3 96 544 124.7 544 160L544 192C544 209.7 558.3 224 576 224C593.7 224 608 209.7 608 192L608 160C608 89.3 550.7 32 480 32C409.3 32 352 89.3 352 160L352 224L192 224C156.7 224 128 252.7 128 288L128 512C128 547.3 156.7 576 192 576L448 576C483.3 576 512 547.3 512 512L512 288C512 252.7 483.3 224 448 224L416 224L416 160z"/>
         </svg>
         Password Security Analyzer
       </h1>
 
       {/* INPUT */}
-      <div style={styles.card}>
-        <p style={styles.fieldLabel}>Enter your password</p>
+      <div style={card}>
+        <p style={fieldLabel}>Enter your password</p>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <input
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password…"
-            style={styles.input}
+            style={{
+              flex: 1,
+              width: "100%",
+              padding: "10px 14px",
+              fontSize: "15px",
+              borderRadius: "8px",
+              border: `1px solid ${t.inputBorder}`,
+              background: t.inputBg,
+              color: t.textPrimary,
+              fontFamily: "monospace",
+              boxSizing: "border-box",
+              outline: "none",
+              transition: "background 0.3s, border-color 0.3s, color 0.3s",
+            }}
           />
           <button
             onClick={() => setShowPassword(!showPassword)}
-            style={styles.iconButton}
+            style={{
+              padding: "10px",
+              borderRadius: "8px",
+              border: `1px solid ${t.inputBorder}`,
+              background: t.inputBg,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              color: t.accent,
+              flexShrink: 0,
+              transition: "background 0.3s, border-color 0.3s",
+            }}
             aria-label="Toggle password visibility"
           >
             {showPassword ? <HideIcon /> : <ShowIcon />}
@@ -122,33 +166,31 @@ export default function PasswordAnalyzer() {
 
       {/* STRENGTH */}
       {password && (
-        <div style={styles.card}>
+        <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <p style={styles.fieldLabel}>Strength</p>
-              <p style={{ fontSize: "18px", fontWeight: 600, margin: "2px 0 0", color: "#1E293B" }}>
+              <p style={fieldLabel}>Strength</p>
+              <p style={{ fontSize: "18px", fontWeight: 600, margin: "2px 0 0", color: t.textPrimary }}>
                 {getLabel(score)}
               </p>
             </div>
             <span style={{
-              background: getColor(score) + "20",
-              color: getColor(score),
+              background: getStrengthColor(score) + "25",
+              color: getStrengthColor(score),
               padding: "3px 12px",
               borderRadius: "20px",
               fontSize: "12px",
               fontWeight: 600,
-              border: `1px solid ${getColor(score)}40`,
+              border: `1px solid ${getStrengthColor(score)}40`,
             }}>
               {score} / 4
             </span>
           </div>
-
-          <div style={styles.barBg}>
-            <div style={{ ...styles.barFill, width: `${(score / 4) * 100}%`, backgroundColor: getColor(score) }} />
+          <div style={{ width: "100%", height: "6px", background: t.barBg, borderRadius: "99px", overflow: "hidden", margin: "12px 0 10px" }}>
+            <div style={{ height: "6px", borderRadius: "99px", transition: "width 0.4s ease, background-color 0.3s", width: `${(score / 4) * 100}%`, backgroundColor: getStrengthColor(score) }} />
           </div>
-
-          <p style={{ fontSize: "13px", color: "#64748B", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "13px", height: "13px", color: "#2563EB" }}>
+          <p style={{ fontSize: "13px", color: t.textSecondary, margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "13px", height: "13px", color: t.accent }}>
               <path fill="currentColor" d="M264.5 64C251.2 64 240.5 74.7 240.5 88C240.5 101.3 251.2 112 264.5 112L296.5 112L296.5 137.3C188.5 149.2 104.5 240.8 104.5 352C104.5 471.3 201.2 568 320.5 568C439.8 568 536.5 471.3 536.5 352C536.5 312.2 525.7 274.9 506.9 242.8L535.1 214.6C547.6 202.1 547.6 181.8 535.1 169.3C522.6 156.8 502.3 156.8 489.8 169.3L466.4 192.7C433.5 162.5 391.2 142.4 344.4 137.2L344.4 111.9L376.4 111.9C389.7 111.9 400.4 101.2 400.4 87.9C400.4 74.6 389.7 63.9 376.4 63.9L264.4 63.9zM344.5 248L344.5 352C344.5 365.3 333.8 376 320.5 376C307.2 376 296.5 365.3 296.5 352L296.5 248C296.5 234.7 307.2 224 320.5 224C333.8 224 344.5 234.7 344.5 248z"/>
             </svg>
             Cracking time: {result.crack_times_display?.offline_slow_hashing_1e5_per_second}
@@ -158,11 +200,11 @@ export default function PasswordAnalyzer() {
 
       {/* ISSUES */}
       {issues.length > 0 && (
-        <div style={styles.card}>
-          <p style={styles.sectionTitle}>Issues detected</p>
-          <ul style={styles.list}>
+        <div style={card}>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>Issues detected</p>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {issues.map((issue, i) => (
-              <li key={i} style={{ ...styles.listItem, color: "#E24B4A" }}>{issue}</li>
+              <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: "#E24B4A" }}>{issue}</li>
             ))}
           </ul>
         </div>
@@ -170,11 +212,11 @@ export default function PasswordAnalyzer() {
 
       {/* TIPS */}
       {advice.length > 0 && (
-        <div style={styles.card}>
-          <p style={styles.sectionTitle}>Security tips</p>
-          <ul style={styles.list}>
+        <div style={card}>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>Security tips</p>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {advice.map((a, i) => (
-              <li key={i} style={{ ...styles.listItem, color: "#2563EB" }}>{a}</li>
+              <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: t.accent }}>{a}</li>
             ))}
           </ul>
         </div>
@@ -183,95 +225,3 @@ export default function PasswordAnalyzer() {
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    maxWidth: "620px",
-    margin: "0 auto",
-    padding: "1.5rem",
-    fontFamily: "system-ui, sans-serif",
-  },
-  title: {
-    fontSize: "20px",
-    fontWeight: 600,
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    marginBottom: "1.25rem",
-    color: "#1E293B",
-  },
-  card: {
-    background: "#F8FAFC",
-    border: "1px solid #E2E8F0",
-    borderRadius: "12px",
-    padding: "1.1rem 1.25rem",
-    marginBottom: "0.875rem",
-  },
-  fieldLabel: {
-    fontSize: "12px",
-    fontWeight: 500,
-    color: "#64748B",
-    margin: "0 0 6px",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
-  },
-  input: {
-    flex: 1,
-    width: "100%",
-    padding: "10px 14px",
-    fontSize: "15px",
-    borderRadius: "8px",
-    border: "1px solid #CBD5E1",
-    background: "#FFFFFF",
-    color: "#1E293B",
-    fontFamily: "monospace",
-    boxSizing: "border-box" as const,
-    outline: "none",
-  },
-  iconButton: {
-    padding: "10px",
-    borderRadius: "8px",
-    border: "1px solid #CBD5E1",
-    background: "#FFFFFF",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    color: "#2563EB",
-    flexShrink: 0,
-  },
-  barBg: {
-    width: "100%",
-    height: "6px",
-    background: "#E2E8F0",
-    borderRadius: "99px",
-    overflow: "hidden",
-    margin: "12px 0 10px",
-  },
-  barFill: {
-    height: "6px",
-    borderRadius: "99px",
-    transition: "width 0.4s ease",
-  },
-  sectionTitle: {
-    fontSize: "11px",
-    fontWeight: 600,
-    color: "#94A3B8",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.07em",
-    margin: "0 0 10px",
-  },
-  list: {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-  },
-  listItem: {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "8px",
-    fontSize: "13px",
-    padding: "6px 0",
-    borderBottom: "1px solid #F1F5F9",
-    lineHeight: "1.5",
-  },
-};
