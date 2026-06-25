@@ -1,12 +1,12 @@
 //components/passwordAnalyzer.tsx
 //password strength analyzer component
-// components/passwordAnalyzer.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { tokens } from "@/app/page";
 import { analyzePasswordAPI } from "@/services/passwordAnalyzer";
 import { AnalyzePasswordResponse } from "@/types/password";
+import { getText } from "@/i18n";
 
 const ErrorIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: "15px", height: "15px", flexShrink: 0, marginTop: "2px" }}>
@@ -38,7 +38,7 @@ const HideIcon = () => (
   </svg>
 );
 
-export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
+export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: string }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [result, setResult] = useState<AnalyzePasswordResponse | null>(null);
@@ -46,18 +46,17 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
   const [apiError, setApiError] = useState("");
 
   const t = dark ? tokens.dark : tokens.light;
+  const text = (key: string) => getText(lang, key);
 
-  // Debounce: llama a la API 400ms después de que el usuario deja de escribir
   useEffect(() => {
     if (!password) {
-      setResult(null);
-      setApiError("");
       return;
     }
 
     const timer = setTimeout(async () => {
       setLoading(true);
       setApiError("");
+      setResult(null);
       try {
         const data = await analyzePasswordAPI({ password });
         setResult(data);
@@ -72,37 +71,47 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
     return () => clearTimeout(timer);
   }, [password]);
 
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+
+    if (!value) {
+      setResult(null);
+      setApiError("");
+      setLoading(false);
+    }
+  };
+
   const score = result?.score ?? 0;
 
   const getIssues = (pw: string) => {
     const issues: React.ReactNode[] = [];
     if (!pw) return issues;
-    if (pw.length < 12) issues.push(<span key="length"><ErrorIcon /> Too short, use at least 12 characters</span>);
-    if (!/[a-z]/.test(pw)) issues.push(<span key="lowercase"><ErrorIcon /> Add lowercase letters</span>);
-    if (!/[0-9]/.test(pw)) issues.push(<span key="numbers"><ErrorIcon /> Add numbers</span>);
-    if (!/[^A-Za-z0-9]/.test(pw)) issues.push(<span key="symbols"><ErrorIcon /> Add symbols like !@#$%</span>);
-    if (/(1234|abcd|qwerty|1111|aaaa)/i.test(pw)) issues.push(<span key="patterns"><ErrorIcon /> Avoid common patterns like '1234' or 'qwerty'</span>);
+    if (pw.length < 12) issues.push(<span key="length"><ErrorIcon /> {text("analyzerIssueTooShort")}</span>);
+    if (!/[a-z]/.test(pw)) issues.push(<span key="lowercase"><ErrorIcon /> {text("analyzerIssueLowercase")}</span>);
+    if (!/[0-9]/.test(pw)) issues.push(<span key="numbers"><ErrorIcon /> {text("analyzerIssueNumbers")}</span>);
+    if (!/[^A-Za-z0-9]/.test(pw)) issues.push(<span key="symbols"><ErrorIcon /> {text("analyzerIssueSymbols")}</span>);
+    if (/(1234|abcd|qwerty|1111|aaaa)/i.test(pw)) issues.push(<span key="patterns"><ErrorIcon /> {text("analyzerIssuePatterns")}</span>);
     return issues;
   };
 
   const getAdvice = (pw: string) => {
     const advice: React.ReactNode[] = [];
     if (!pw) return advice;
-    if (pw.length < 12) advice.push(<span key="length-advice"><InfoIcon /> Use at least 12–16 characters for greater security</span>);
-    if (!/[A-Z]/.test(pw)) advice.push(<span key="uppercase-advice"><InfoIcon /> Add uppercase letters to increase entropy</span>);
-    if (!/[0-9]/.test(pw)) advice.push(<span key="numbers-advice"><InfoIcon /> Include numbers for better security</span>);
-    if (!/[^A-Za-z0-9]/.test(pw)) advice.push(<span key="symbols-advice"><InfoIcon /> Use symbols like !@#$% to strengthen security</span>);
-    if (score <= 2) advice.push(<span key="vulnerable-advice"><InfoIcon /> Vulnerable to dictionary or brute force attacks</span>);
-    if (score === 4) advice.push(<span key="strong-advice"><CheckIcon /> Good password, hard to crack</span>);
+    if (pw.length < 12) advice.push(<span key="length-advice"><InfoIcon /> {text("analyzerAdviceLength")}</span>);
+    if (!/[A-Z]/.test(pw)) advice.push(<span key="uppercase-advice"><InfoIcon /> {text("analyzerAdviceUppercase")}</span>);
+    if (!/[0-9]/.test(pw)) advice.push(<span key="numbers-advice"><InfoIcon /> {text("analyzerAdviceNumbers")}</span>);
+    if (!/[^A-Za-z0-9]/.test(pw)) advice.push(<span key="symbols-advice"><InfoIcon /> {text("analyzerAdviceSymbols")}</span>);
+    if (score <= 2) advice.push(<span key="vulnerable-advice"><InfoIcon /> {text("analyzerAdviceVulnerable")}</span>);
+    if (score === 4) advice.push(<span key="strong-advice"><CheckIcon /> {text("analyzerAdviceStrong")}</span>);
     return advice;
   };
 
   const getLabel = (s: number) => {
     switch (s) {
-      case 0: case 1: return "Weak";
-      case 2: return "Medium";
-      case 3: return "Strong";
-      case 4: return "Excellent";
+      case 0: case 1: return text("analyzerLabelWeak");
+      case 2: return text("analyzerLabelMedium");
+      case 3: return text("analyzerLabelStrong");
+      case 4: return text("analyzerLabelExcellent");
       default: return "";
     }
   };
@@ -145,18 +154,18 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "22px", height: "22px", color: t.accent }}>
           <path fill="currentColor" d="M416 160C416 124.7 444.7 96 480 96C515.3 96 544 124.7 544 160L544 192C544 209.7 558.3 224 576 224C593.7 224 608 209.7 608 192L608 160C608 89.3 550.7 32 480 32C409.3 32 352 89.3 352 160L352 224L192 224C156.7 224 128 252.7 128 288L128 512C128 547.3 156.7 576 192 576L448 576C483.3 576 512 547.3 512 512L512 288C512 252.7 483.3 224 448 224L416 224L416 160z"/>
         </svg>
-        Password Security Analyzer
+        {text("analyzerTitle")}
       </h1>
 
       {/* INPUT */}
       <div style={card}>
-        <p style={fieldLabel}>Enter your password</p>
+        <p style={fieldLabel}>{text("analyzerInputLabel")}</p>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <input
             type={showPassword ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password…"
+            onChange={(e) => handlePasswordChange(e.target.value)}
+            placeholder={text("analyzerPlaceholder")}
             style={{
               flex: 1,
               width: "100%",
@@ -192,7 +201,6 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
           </button>
         </div>
 
-        {/* Indicador de carga bajo el input */}
         {loading && (
           <p style={{ margin: "8px 0 0", fontSize: "12px", color: t.textSecondary, display: "flex", alignItems: "center", gap: "6px" }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
@@ -200,11 +208,10 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
               <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
               <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
             </svg>
-            Analyzing…
+            {text("analyzerLoading")}
           </p>
         )}
 
-        {/* Error de API */}
         {apiError && (
           <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#E24B4A", display: "flex", alignItems: "center", gap: "6px" }}>
             <ErrorIcon /> {apiError}
@@ -212,12 +219,12 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
         )}
       </div>
 
-      {/* STRENGTH — solo si hay resultado de la API */}
+      {/* STRENGTH */}
       {result && password && (
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <p style={fieldLabel}>Strength</p>
+              <p style={fieldLabel}>{text("analyzerStrength")}</p>
               <p style={{ fontSize: "18px", fontWeight: 600, margin: "2px 0 0", color: t.textPrimary }}>
                 {getLabel(score)}
               </p>
@@ -244,7 +251,7 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "13px", height: "13px", color: t.accent }}>
                 <path fill="currentColor" d="M264.5 64C251.2 64 240.5 74.7 240.5 88C240.5 101.3 251.2 112 264.5 112L296.5 112L296.5 137.3C188.5 149.2 104.5 240.8 104.5 352C104.5 471.3 201.2 568 320.5 568C439.8 568 536.5 471.3 536.5 352C536.5 312.2 525.7 274.9 506.9 242.8L535.1 214.6C547.6 202.1 547.6 181.8 535.1 169.3C522.6 156.8 502.3 156.8 489.8 169.3L466.4 192.7C433.5 162.5 391.2 142.4 344.4 137.2L344.4 111.9L376.4 111.9C389.7 111.9 400.4 101.2 400.4 87.9C400.4 74.6 389.7 63.9 376.4 63.9L264.4 63.9zM344.5 248L344.5 352C344.5 365.3 333.8 376 320.5 376C307.2 376 296.5 365.3 296.5 352L296.5 248C296.5 234.7 307.2 224 320.5 224C333.8 224 344.5 234.7 344.5 248z"/>
               </svg>
-              Cracking time: {result.crackTime}
+              {text("analyzerCrackingTime")} {result.crackTime}
             </p>
           )}
         </div>
@@ -253,7 +260,7 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
       {/* ISSUES */}
       {issues.length > 0 && password && (
         <div style={card}>
-          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>Issues detected</p>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>{text("analyzerIssues")}</p>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {issues.map((issue, i) => (
               <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: "#E24B4A" }}>{issue}</li>
@@ -265,7 +272,7 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
       {/* TIPS */}
       {advice.length > 0 && password && (
         <div style={card}>
-          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>Security tips</p>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>{text("analyzerTips")}</p>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {advice.map((a, i) => (
               <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: t.accent }}>{a}</li>

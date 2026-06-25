@@ -1,5 +1,9 @@
+//app/layout.tsx
+// Root layout for the application
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import "flag-icons/css/flag-icons.min.css";
 import "./globals.css";
 
 const geistSans = Geist({

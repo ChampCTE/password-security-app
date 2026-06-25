@@ -1,0 +1,80 @@
+// locales/en.ts
+
+export const en = {
+  homeTitle: "Password Security Tool",
+  homeSubtitle: "Analyze the strength of your passwords and generate secure ones!!",
+  footerBuiltBy: "Built by",
+  footerViewSource: "View source",
+  analyzerTitle: "Password Analyzer",
+  generatorTitle: "Password Generator",
+  analyzerInputLabel: "Enter your password",
+  analyzerPlaceholder: "Enter your password…",
+  analyzerLoading: "Analyzing…",
+  analyzerStrength: "Strength",
+  analyzerCrackingTime: "Cracking time:",
+  analyzerIssues: "Issues detected",
+  analyzerTips: "Security tips",
+  analyzerIssueTooShort: "Too short, use at least 12 characters",
+  analyzerIssueLowercase: "Add lowercase letters",
+  analyzerIssueNumbers: "Add numbers",
+  analyzerIssueSymbols: "Add symbols like !@#$%",
+  analyzerIssuePatterns: "Avoid common patterns like '1234' or 'qwerty'",
+  analyzerAdviceLength: "Use at least 12–16 characters for greater security",
+  analyzerAdviceUppercase: "Add uppercase letters to increase entropy",
+  analyzerAdviceNumbers: "Include numbers for better security",
+  analyzerAdviceSymbols: "Use symbols like !@#$% to strengthen security",
+  analyzerAdviceVulnerable: "Vulnerable to dictionary or brute force attacks",
+  analyzerAdviceStrong: "Good password, hard to crack",
+  analyzerLabelWeak: "Weak",
+  analyzerLabelMedium: "Medium",
+  analyzerLabelStrong: "Strong",
+  analyzerLabelExcellent: "Excellent",
+  analyzerError: "Could not analyze password. Please try again.",
+  generatorLength: "Length",
+  generatorUppercase: "Uppercase",
+  generatorLowercase: "Lowercase",
+  generatorNumbers: "Numbers",
+  generatorSymbols: "Symbols",
+  generatorGenerate: "Generate Password",
+  generatorGenerating: "Generating…",
+  generatorError: "Could not generate password. Please try again.",
+  generatorGeneratedPassword: "Generated password",
+  generatorCopy: "Copy to Clipboard",
+  generatorCopied: "Copied!",
+
+  enterPassword: "Enter your password",
+
+  strength: "Strength",
+  crackTime: "Time to crack",
+  guesses: "Estimated guesses",
+
+  issuesTitle: "Detected issues",
+  tipsTitle: "Security tips",
+
+  generateButton: "Generate password",
+  analyzeButton: "Analyze password",
+  copyButton: "Copy to clipboard",
+  copied: "Copied!",
+
+  length: "Length",
+  options: "Options",
+
+  // options
+  uppercase: "Uppercase",
+  lowercase: "Lowercase",
+  numbers: "Numbers",
+  symbols: "Symbols",
+
+  // issues
+  tooShort: "Too short, use at least 12 characters",
+  addLowercase: "Add lowercase letters",
+  addUppercase: "Add uppercase letters",
+  addNumbers: "Add numbers",
+  addSymbols: "Add symbols",
+
+  noPassword: "Please enter a password first",
+
+  loading: "Loading...",
+  generating: "Generating...",
+  analyzing: "Analyzing...",
+};
