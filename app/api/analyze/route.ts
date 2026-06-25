@@ -1,13 +1,12 @@
-// app/api/analyze/routes.ts
-// API route for analyzing password strength
-
 import { NextResponse } from "next/server";
-import zxcvbn from "zxcvbn-ts";
+import { ZxcvbnFactory } from "@zxcvbn-ts/core";
+import { dictionary } from "@zxcvbn-ts/language-common";
+
+const zxcvbn = new ZxcvbnFactory({ dictionary });
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-
     const { password } = body;
 
     if (!password) {
@@ -17,14 +16,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = zxcvbn(password);
+    const result = zxcvbn.check(password);
 
     return NextResponse.json({
       score: result.score,
       guesses: result.guesses,
-      crackTime:
-        result.crack_times_display
-          ?.offline_slow_hashing_1e5_per_second,
+      crackTime: result.crackTimes?.offlineSlowHashingXPerSecond?.display,
     });
   } catch {
     return NextResponse.json(
