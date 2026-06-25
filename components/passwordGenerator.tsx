@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { tokens } from "@/app/page";
+import { generatePasswordAPI } from "@/services/passwordGenerator";
 
 export default function PasswordGenerator({ dark }: { dark: boolean }) {
   const [length, setLength] = useState(12);
@@ -13,36 +14,30 @@ export default function PasswordGenerator({ dark }: { dark: boolean }) {
   const [useSymbols, setUseSymbols] = useState(false);
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const t = dark ? tokens.dark : tokens.light;
 
-  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const lower = "abcdefghijklmnopqrstuvwxyz";
-  const numbers = "0123456789";
-  const symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+  const options = [
+    { label: "Uppercase", state: useUpper,   toggle: () => setUseUpper(!useUpper) },
+    { label: "Lowercase", state: useLower,   toggle: () => setUseLower(!useLower) },
+    { label: "Numbers",   state: useNumbers, toggle: () => setUseNumbers(!useNumbers) },
+    { label: "Symbols",   state: useSymbols, toggle: () => setUseSymbols(!useSymbols) },
+  ];
 
-  const getRandomChar = (str: string) => str[Math.floor(Math.random() * str.length)];
-
-  const shuffle = (array: string[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  };
-
-  const generatePassword = () => {
-    let available = "";
-    let mandatory: string[] = [];
-    if (useUpper) { available += upper; mandatory.push(getRandomChar(upper)); }
-    if (useLower) { available += lower; mandatory.push(getRandomChar(lower)); }
-    if (useNumbers) { available += numbers; mandatory.push(getRandomChar(numbers)); }
-    if (useSymbols) { available += symbols; mandatory.push(getRandomChar(symbols)); }
-    if (!available) { alert("Select at least one character option."); return; }
-    let result: string[] = [...mandatory];
-    for (let i = result.length; i < length; i++) result.push(getRandomChar(available));
-    setPassword(shuffle(result).join(""));
+  const generatePassword = async () => {
+    setLoading(true);
+    setError("");
     setCopied(false);
+    try {
+      const res = await generatePasswordAPI({ length, useUpper, useLower, useNumbers, useSymbols });
+      setPassword(res.password);
+    } catch {
+      setError("Could not generate password. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyToClipboard = async () => {
@@ -51,13 +46,6 @@ export default function PasswordGenerator({ dark }: { dark: boolean }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const options = [
-    { label: "Uppercase", state: useUpper,   toggle: () => setUseUpper(!useUpper) },
-    { label: "Lowercase", state: useLower,   toggle: () => setUseLower(!useLower) },
-    { label: "Numbers",   state: useNumbers, toggle: () => setUseNumbers(!useNumbers) },
-    { label: "Symbols",   state: useSymbols, toggle: () => setUseSymbols(!useSymbols) },
-  ];
 
   const card: React.CSSProperties = {
     background: t.cardBg,
@@ -118,14 +106,15 @@ export default function PasswordGenerator({ dark }: { dark: boolean }) {
         {/* GENERATE */}
         <button
           onClick={generatePassword}
+          disabled={loading}
           style={{
             width: "100%",
             padding: "11px",
-            background: t.accent,
+            background: loading ? t.border : t.accent,
             color: dark ? "#0F172A" : "#FFFFFF",
             border: "none",
             borderRadius: "8px",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
             fontSize: "15px",
             fontWeight: 600,
             display: "flex",
@@ -134,14 +123,34 @@ export default function PasswordGenerator({ dark }: { dark: boolean }) {
             gap: "8px",
             marginTop: "4px",
             transition: "background 0.3s",
+            opacity: loading ? 0.7 : 1,
           }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="23 4 23 10 17 10"/>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-          </svg>
-          Generate Password
+          {loading ? (
+            // Spinner SVG
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"
+              style={{ animation: "spin 0.8s linear infinite" }}>
+              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          )}
+          {loading ? "Generating…" : "Generate Password"}
         </button>
+
+        {/* ERROR */}
+        {error && (
+          <p style={{ margin: "10px 0 0", fontSize: "13px", color: "#E24B4A", display: "flex", alignItems: "center", gap: "6px" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: "14px", height: "14px", flexShrink: 0 }}>
+              <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.29 13.71a1 1 0 0 1-1.42 0L12 13.41l-2.88 2.88a1 1 0 0 1-1.42-1.42L10.59 12 7.7 9.12a1 1 0 1 1 1.42-1.42L12 10.59l2.88-2.88a1 1 0 0 1 1.42 1.42L13.41 12l2.88 2.88a1 1 0 0 1 0 1.42z"/>
+            </svg>
+            {error}
+          </p>
+        )}
       </div>
 
       {/* OUTPUT */}
