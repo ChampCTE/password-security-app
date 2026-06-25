@@ -1,10 +1,12 @@
 //components/passwordAnalyzer.tsx
 //password strength analyzer component
+// components/passwordAnalyzer.tsx
 "use client";
 
-import React, { useMemo, useState } from "react";
-import zxcvbn from "zxcvbn-ts";
+import React, { useEffect, useState } from "react";
 import { tokens } from "@/app/page";
+import { analyzePasswordAPI } from "@/services/passwordAnalyzer";
+import { AnalyzePasswordResponse } from "@/types/password";
 
 const ErrorIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: "15px", height: "15px", flexShrink: 0, marginTop: "2px" }}>
@@ -39,11 +41,38 @@ const HideIcon = () => (
 export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [result, setResult] = useState<AnalyzePasswordResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const t = dark ? tokens.dark : tokens.light;
 
-  const result = useMemo(() => zxcvbn(password), [password]);
-  const score = result.score;
+  // Debounce: llama a la API 400ms después de que el usuario deja de escribir
+  useEffect(() => {
+    if (!password) {
+      setResult(null);
+      setApiError("");
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setApiError("");
+      try {
+        const data = await analyzePasswordAPI({ password });
+        setResult(data);
+      } catch {
+        setApiError("Could not analyze password. Please try again.");
+        setResult(null);
+      } finally {
+        setLoading(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [password]);
+
+  const score = result?.score ?? 0;
 
   const getIssues = (pw: string) => {
     const issues: React.ReactNode[] = [];
@@ -162,10 +191,29 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
             {showPassword ? <HideIcon /> : <ShowIcon />}
           </button>
         </div>
+
+        {/* Indicador de carga bajo el input */}
+        {loading && (
+          <p style={{ margin: "8px 0 0", fontSize: "12px", color: t.textSecondary, display: "flex", alignItems: "center", gap: "6px" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+              style={{ animation: "spin 0.8s linear infinite", color: t.accent }}>
+              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            Analyzing…
+          </p>
+        )}
+
+        {/* Error de API */}
+        {apiError && (
+          <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#E24B4A", display: "flex", alignItems: "center", gap: "6px" }}>
+            <ErrorIcon /> {apiError}
+          </p>
+        )}
       </div>
 
-      {/* STRENGTH */}
-      {password && (
+      {/* STRENGTH — solo si hay resultado de la API */}
+      {result && password && (
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
@@ -186,20 +234,24 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
               {score} / 4
             </span>
           </div>
+
           <div style={{ width: "100%", height: "6px", background: t.barBg, borderRadius: "99px", overflow: "hidden", margin: "12px 0 10px" }}>
             <div style={{ height: "6px", borderRadius: "99px", transition: "width 0.4s ease, background-color 0.3s", width: `${(score / 4) * 100}%`, backgroundColor: getStrengthColor(score) }} />
           </div>
-          <p style={{ fontSize: "13px", color: t.textSecondary, margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "13px", height: "13px", color: t.accent }}>
-              <path fill="currentColor" d="M264.5 64C251.2 64 240.5 74.7 240.5 88C240.5 101.3 251.2 112 264.5 112L296.5 112L296.5 137.3C188.5 149.2 104.5 240.8 104.5 352C104.5 471.3 201.2 568 320.5 568C439.8 568 536.5 471.3 536.5 352C536.5 312.2 525.7 274.9 506.9 242.8L535.1 214.6C547.6 202.1 547.6 181.8 535.1 169.3C522.6 156.8 502.3 156.8 489.8 169.3L466.4 192.7C433.5 162.5 391.2 142.4 344.4 137.2L344.4 111.9L376.4 111.9C389.7 111.9 400.4 101.2 400.4 87.9C400.4 74.6 389.7 63.9 376.4 63.9L264.4 63.9zM344.5 248L344.5 352C344.5 365.3 333.8 376 320.5 376C307.2 376 296.5 365.3 296.5 352L296.5 248C296.5 234.7 307.2 224 320.5 224C333.8 224 344.5 234.7 344.5 248z"/>
-            </svg>
-            Cracking time: {result.crack_times_display?.offline_slow_hashing_1e5_per_second}
-          </p>
+
+          {result.crackTime && (
+            <p style={{ fontSize: "13px", color: t.textSecondary, margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "13px", height: "13px", color: t.accent }}>
+                <path fill="currentColor" d="M264.5 64C251.2 64 240.5 74.7 240.5 88C240.5 101.3 251.2 112 264.5 112L296.5 112L296.5 137.3C188.5 149.2 104.5 240.8 104.5 352C104.5 471.3 201.2 568 320.5 568C439.8 568 536.5 471.3 536.5 352C536.5 312.2 525.7 274.9 506.9 242.8L535.1 214.6C547.6 202.1 547.6 181.8 535.1 169.3C522.6 156.8 502.3 156.8 489.8 169.3L466.4 192.7C433.5 162.5 391.2 142.4 344.4 137.2L344.4 111.9L376.4 111.9C389.7 111.9 400.4 101.2 400.4 87.9C400.4 74.6 389.7 63.9 376.4 63.9L264.4 63.9zM344.5 248L344.5 352C344.5 365.3 333.8 376 320.5 376C307.2 376 296.5 365.3 296.5 352L296.5 248C296.5 234.7 307.2 224 320.5 224C333.8 224 344.5 234.7 344.5 248z"/>
+              </svg>
+              Cracking time: {result.crackTime}
+            </p>
+          )}
         </div>
       )}
 
       {/* ISSUES */}
-      {issues.length > 0 && (
+      {issues.length > 0 && password && (
         <div style={card}>
           <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>Issues detected</p>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
@@ -211,7 +263,7 @@ export default function PasswordAnalyzer({ dark }: { dark: boolean }) {
       )}
 
       {/* TIPS */}
-      {advice.length > 0 && (
+      {advice.length > 0 && password && (
         <div style={card}>
           <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>Security tips</p>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>

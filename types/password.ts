@@ -12,3 +12,13 @@ export type GeneratePasswordRequest = {
 export type GeneratePasswordResponse = {
   password: string;
 };
+
+export type AnalyzePasswordRequest = {
+  password: string;
+};
+
+export type AnalyzePasswordResponse = {
+  score: number;
+  guesses: number;
+  crackTime?: string;
+};
