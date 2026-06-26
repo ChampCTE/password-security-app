@@ -60,28 +60,10 @@ This app offers:
 
 ## Dependencies
 
-These are the actual runtime dependencies defined in `package.json`:
-
-- `next@16.2.9` — React framework for web applications.
-- `react@19.2.4` — UI library.
-- `react-dom@19.2.4` — React DOM renderer.
-- `@zxcvbn-ts/core@^4.1.2` — password strength scoring core library.
-- `@zxcvbn-ts/language-common@^4.1.2` — language dictionary for `zxcvbn-ts`.
-- `zxcvbn-ts@^2.2.3` — password scoring utility.
-- `flag-icons@^7.5.0` — flag icons for language selection.
-
-## Dev dependencies
-
-These are the development-only dependencies defined in `package.json`:
-
-- `@tailwindcss/postcss@^4` — Tailwind CSS PostCSS plugin.
-- `tailwindcss@^4` — Tailwind CSS framework.
-- `typescript@^5` — TypeScript compiler.
-- `eslint@^9` — linting tool.
-- `eslint-config-next@16.2.9` — Next.js ESLint rules.
-- `@types/node@^20` — Node.js type definitions.
-- `@types/react@^19` — React type definitions.
-- `@types/react-dom@^19` — React DOM type definitions.
+- `next` — React framework with API routes support.
+- `react` / `react-dom` — UI library.
+- `@zxcvbn-ts/core` + `@zxcvbn-ts/language-common` — password strength analysis on the server.
+- `flag-icons` — flag icons for language selection.
 
 ## Scripts
 
