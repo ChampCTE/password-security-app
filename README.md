@@ -6,7 +6,7 @@ A password security web application built with Next.js, TypeScript, and Tailwind
 
 Deploy to Vercel for the easiest setup.
 
-- Vercel URL: _pending deploy_
+- Vercel URL: https://password-security-app-one.vercel.app
 
 ## Description
 
