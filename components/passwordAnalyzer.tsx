@@ -269,6 +269,80 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
         </div>
       )}
 
+      {/* BREACH CHECK */}
+        {result && password && (
+          <div style={card}>
+            <p
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: t.sectionTitle,
+                textTransform: "uppercase",
+                letterSpacing: "0.07em",
+                margin: "0 0 10px",
+              }}
+            >
+              Password Breach Check
+            </p>
+
+            {result.pwned ? (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  color: "#E24B4A",
+                  alignItems: "flex-start",
+                }}
+              >
+                <ErrorIcon />
+                <div>
+                  <p style={{ margin: 0, fontWeight: 600 }}>
+                    This password has been found in data breaches.
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                      fontSize: "13px",
+                      color: t.textSecondary,
+                    }}
+                  >
+                    It has appeared <strong>{result.breachCount.toLocaleString()}</strong>{" "}
+                    times in known data breaches. It is strongly recommended not to use
+                    this password.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  color: "#16A34A",
+                  alignItems: "flex-start",
+                }}
+              >
+                <CheckIcon />
+                <div>
+                  <p style={{ margin: 0, fontWeight: 600 }}>
+                    No breaches found.
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                      fontSize: "13px",
+                      color: t.textSecondary,
+                    }}
+                  >
+                    This password does not appear in the Have I Been Pwned database.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
       {/* TIPS */}
       {advice.length > 0 && password && (
         <div style={card}>
