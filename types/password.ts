@@ -21,4 +21,7 @@ export type AnalyzePasswordResponse = {
   score: number;
   guesses: number;
   crackTime?: string;
+
+  pwned: boolean;
+  breachCount: number;
 };
