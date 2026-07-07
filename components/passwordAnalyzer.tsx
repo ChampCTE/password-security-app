@@ -257,18 +257,6 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
         </div>
       )}
 
-      {/* ISSUES */}
-      {issues.length > 0 && password && (
-        <div style={card}>
-          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>{text("analyzerIssues")}</p>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {issues.map((issue, i) => (
-              <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: "#E24B4A" }}>{issue}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {/* BREACH CHECK */}
         {result && password && (
           <div style={card}>
@@ -282,7 +270,7 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
                 margin: "0 0 10px",
               }}
             >
-              Password Breach Check
+              {text("analyzerExposure")}
             </p>
 
             {result.pwned ? (
@@ -297,7 +285,7 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
                 <ErrorIcon />
                 <div>
                   <p style={{ margin: 0, fontWeight: 600 }}>
-                    This password has been found in data breaches.
+                    {text("analyzerExposureFound")}
                   </p>
 
                   <p
@@ -307,9 +295,10 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
                       color: t.textSecondary,
                     }}
                   >
-                    It has appeared <strong>{result.breachCount.toLocaleString()}</strong>{" "}
-                    times in known data breaches. It is strongly recommended not to use
-                    this password.
+                    {text("analyzerExposureCount").replace(
+                      "{count}",
+                      result.breachCount.toLocaleString()
+                    )}
                   </p>
                 </div>
               </div>
@@ -325,7 +314,7 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
                 <CheckIcon />
                 <div>
                   <p style={{ margin: 0, fontWeight: 600 }}>
-                    No breaches found.
+                    {text("analyzerExposureSafe")}
                   </p>
 
                   <p
@@ -335,13 +324,25 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
                       color: t.textSecondary,
                     }}
                   >
-                    This password does not appear in the Have I Been Pwned database.
+                    {text("analyzerExposureSafeDescription")}
                   </p>
                 </div>
               </div>
             )}
           </div>
         )}
+
+      {/* ISSUES */}
+      {issues.length > 0 && password && (
+        <div style={card}>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>{text("analyzerIssues")}</p>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {issues.map((issue, i) => (
+              <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: "#E24B4A" }}>{issue}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* TIPS */}
       {advice.length > 0 && password && (
