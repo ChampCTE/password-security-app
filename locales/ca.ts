@@ -4,7 +4,7 @@ export const ca = {
   homeTitle: "Eina de seguretat de contrasenyes",
   homeSubtitle: "Analitza la força de les teves contrasenyes i genera contrasenyes segures!!",
   tabAnalyzer: "Analitzador",
-  tabGenerator: "Generadpr",
+  tabGenerator: "Generador",
   footerBuiltBy: "Fet per",
   footerViewSource: "Veure codi font",
   analyzerTitle: "Analitzador de contrasenyes",

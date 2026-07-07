@@ -44,32 +44,46 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
   const [result, setResult] = useState<AnalyzePasswordResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [desktop, setDesktop] = useState(false);
 
   const t = dark ? tokens.dark : tokens.light;
   const text = (key: string) => getText(lang, key);
+
+  useEffect(() => {
+    const check = () => {
+      setDesktop(window.innerWidth >= 900);
+    };
+
+    check();
+
+    window.addEventListener("resize", check);
+
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     if (!password) {
       return;
     }
 
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      setApiError("");
-      setResult(null);
-      try {
-        const data = await analyzePasswordAPI({ password });
-        setResult(data);
-      } catch {
-        setApiError("Could not analyze password. Please try again.");
-        setResult(null);
-      } finally {
-        setLoading(false);
-      }
-    }, 400);
+  const timer = setTimeout(async () => {
+    setLoading(true);
+    setApiError("");
+    setResult(null);
 
-    return () => clearTimeout(timer);
-  }, [password]);
+    try {
+      const data = await analyzePasswordAPI({ password });
+      setResult(data);
+    } catch {
+      setApiError("Could not analyze password. Please try again.");
+      setResult(null);
+    } finally {
+      setLoading(false);
+    }
+  }, 400);
+
+  return () => clearTimeout(timer);
+}, [password]);
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
@@ -148,14 +162,27 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
   };
 
   return (
-    <div style={{ maxWidth: "620px", margin: "0 auto", padding: "1.5rem", fontFamily: "system-ui, sans-serif" }}>
+    <div
+      style={{
+        width: "100%",
+        padding: "1.5rem",
+        fontFamily: "system-ui, sans-serif",
+      }}
+    >
 
-      <h1 style={{ fontSize: "20px", fontWeight: 600, display: "flex", alignItems: "center", gap: "10px", marginBottom: "1.25rem", color: t.textPrimary, transition: "color 0.3s" }}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "22px", height: "22px", color: t.accent }}>
-          <path fill="currentColor" d="M416 160C416 124.7 444.7 96 480 96C515.3 96 544 124.7 544 160L544 192C544 209.7 558.3 224 576 224C593.7 224 608 209.7 608 192L608 160C608 89.3 550.7 32 480 32C409.3 32 352 89.3 352 160L352 224L192 224C156.7 224 128 252.7 128 288L128 512C128 547.3 156.7 576 192 576L448 576C483.3 576 512 547.3 512 512L512 288C512 252.7 483.3 224 448 224L416 224L416 160z"/>
-        </svg>
-        {text("analyzerTitle")}
-      </h1>
+    <div
+      style={{
+        maxWidth: "620px",
+        margin: "0 auto 24px",
+      }}
+    >
+
+    <h1 style={{ fontSize: "20px", fontWeight: 600, display: "flex", alignItems: "center", gap: "10px", marginBottom: "1.25rem", color: t.textPrimary, transition: "color 0.3s" }}>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "22px", height: "22px", color: t.accent }}>
+        <path fill="currentColor" d="M416 160C416 124.7 444.7 96 480 96C515.3 96 544 124.7 544 160L544 192C544 209.7 558.3 224 576 224C593.7 224 608 209.7 608 192L608 160C608 89.3 550.7 32 480 32C409.3 32 352 89.3 352 160L352 224L192 224C156.7 224 128 252.7 128 288L128 512C128 547.3 156.7 576 192 576L448 576C483.3 576 512 547.3 512 512L512 288C512 252.7 483.3 224 448 224L416 224L416 160z"/>
+      </svg>
+      {text("analyzerTitle")}
+    </h1>
 
       {/* INPUT */}
       <div style={card}>
@@ -217,145 +244,160 @@ export default function PasswordAnalyzer({ dark, lang }: { dark: boolean; lang: 
             <ErrorIcon /> {apiError}
           </p>
         )}
-      </div>
-
-      {/* STRENGTH */}
-      {result && password && (
-        <div style={card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <p style={fieldLabel}>{text("analyzerStrength")}</p>
-              <p style={{ fontSize: "18px", fontWeight: 600, margin: "2px 0 0", color: t.textPrimary }}>
-                {getLabel(score)}
-              </p>
-            </div>
-            <span style={{
-              background: getStrengthColor(score) + "25",
-              color: getStrengthColor(score),
-              padding: "3px 12px",
-              borderRadius: "20px",
-              fontSize: "12px",
-              fontWeight: 600,
-              border: `1px solid ${getStrengthColor(score)}40`,
-            }}>
-              {score} / 4
-            </span>
-          </div>
-
-          <div style={{ width: "100%", height: "6px", background: t.barBg, borderRadius: "99px", overflow: "hidden", margin: "12px 0 10px" }}>
-            <div style={{ height: "6px", borderRadius: "99px", transition: "width 0.4s ease, background-color 0.3s", width: `${(score / 4) * 100}%`, backgroundColor: getStrengthColor(score) }} />
-          </div>
-
-          {result.crackTime && (
-            <p style={{ fontSize: "13px", color: t.textSecondary, margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "13px", height: "13px", color: t.accent }}>
-                <path fill="currentColor" d="M264.5 64C251.2 64 240.5 74.7 240.5 88C240.5 101.3 251.2 112 264.5 112L296.5 112L296.5 137.3C188.5 149.2 104.5 240.8 104.5 352C104.5 471.3 201.2 568 320.5 568C439.8 568 536.5 471.3 536.5 352C536.5 312.2 525.7 274.9 506.9 242.8L535.1 214.6C547.6 202.1 547.6 181.8 535.1 169.3C522.6 156.8 502.3 156.8 489.8 169.3L466.4 192.7C433.5 162.5 391.2 142.4 344.4 137.2L344.4 111.9L376.4 111.9C389.7 111.9 400.4 101.2 400.4 87.9C400.4 74.6 389.7 63.9 376.4 63.9L264.4 63.9zM344.5 248L344.5 352C344.5 365.3 333.8 376 320.5 376C307.2 376 296.5 365.3 296.5 352L296.5 248C296.5 234.7 307.2 224 320.5 224C333.8 224 344.5 234.7 344.5 248z"/>
-              </svg>
-              {text("analyzerCrackingTime")} {result.crackTime}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* BREACH CHECK */}
-        {result && password && (
-          <div style={card}>
-            <p
-              style={{
-                fontSize: "11px",
-                fontWeight: 600,
-                color: t.sectionTitle,
-                textTransform: "uppercase",
-                letterSpacing: "0.07em",
-                margin: "0 0 10px",
-              }}
-            >
-              {text("analyzerExposure")}
-            </p>
-
-            {result.pwned ? (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  color: "#E24B4A",
-                  alignItems: "flex-start",
-                }}
-              >
-                <ErrorIcon />
+      </div>  
+    </div>
+    
+    <div
+      style={{
+        maxWidth: "1300px",
+        margin: "0 auto",
+        display: desktop ? "grid" : "block",
+        gridTemplateColumns: desktop
+          ? "repeat(2, minmax(420px, 1fr))"
+          : undefined,
+        justifyContent: "center",
+        gap: "16px",
+        alignItems: "start",
+      }}
+      >
+        {/* STRENGTH */}
+          {result && password && (
+            <div style={card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <p style={{ margin: 0, fontWeight: 600 }}>
-                    {text("analyzerExposureFound")}
-                  </p>
-
-                  <p
-                    style={{
-                      margin: "6px 0 0",
-                      fontSize: "13px",
-                      color: t.textSecondary,
-                    }}
-                  >
-                    {text("analyzerExposureCount").replace(
-                      "{count}",
-                      result.breachCount.toLocaleString()
-                    )}
-                  </p>
+                   <p style={fieldLabel}>{text("analyzerStrength")}</p>
+                   <p style={{ fontSize: "18px", fontWeight: 600, margin: "2px 0 0", color: t.textPrimary }}>
+                    {getLabel(score)}
+                   </p> 
                 </div>
+                <span style={{ 
+                  background: getStrengthColor(score) + "25",
+                  color: getStrengthColor(score),
+                  padding: "3px 12px",
+                  borderRadius: "20px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  border: `1px solid ${getStrengthColor(score)}40`,
+                }}>
+                {score} / 4
+               </span>
               </div>
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  color: "#16A34A",
-                  alignItems: "flex-start",
-                }}
-              >
-                <CheckIcon />
-                <div>
-                  <p style={{ margin: 0, fontWeight: 600 }}>
-                    {text("analyzerExposureSafe")}
-                  </p>
 
-                  <p
+              <div style={{ width: "100%", height: "6px", background: t.barBg, borderRadius: "99px", overflow: "hidden", margin: "12px 0 10px" }}>
+              <div style={{ height: "6px", borderRadius: "99px", transition: "width 0.4s ease, background-color 0.3s", width: `${(score / 4) * 100}%`, backgroundColor: getStrengthColor(score) }} />
+                    </div>
+
+              {result.crackTime && (
+                <p style={{ fontSize: "13px", color: t.textSecondary, margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "13px", height: "13px", color: t.accent }}>
+                    <path fill="currentColor" d="M264.5 64C251.2 64 240.5 74.7 240.5 88C240.5 101.3 251.2 112 264.5 112L296.5 112L296.5 137.3C188.5 149.2 104.5 240.8 104.5 352C104.5 471.3 201.2 568 320.5 568C439.8 568 536.5 471.3 536.5 352C536.5 312.2 525.7 274.9 506.9 242.8L535.1 214.6C547.6 202.1 547.6 181.8 535.1 169.3C522.6 156.8 502.3 156.8 489.8 169.3L466.4 192.7C433.5 162.5 391.2 142.4 344.4 137.2L344.4 111.9L376.4 111.9C389.7 111.9 400.4 101.2 400.4 87.9C400.4 74.6 389.7 63.9 376.4 63.9L264.4 63.9zM344.5 248L344.5 352C344.5 365.3 333.8 376 320.5 376C307.2 376 296.5 365.3 296.5 352L296.5 248C296.5 234.7 307.2 224 320.5 224C333.8 224 344.5 234.7 344.5 248z"/>
+                  </svg>
+                  {text("analyzerCrackingTime")} {result.crackTime}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* BREACH CHECK */}
+            {result && password && (
+              <div style={card}>
+                <p
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: t.sectionTitle,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.07em",
+                    margin: "0 0 10px",
+                  }}
+                >
+                  {text("analyzerExposure")}
+                </p>
+
+                {result.pwned ? (
+                  <div
                     style={{
-                      margin: "6px 0 0",
-                      fontSize: "13px",
-                      color: t.textSecondary,
+                      display: "flex",
+                      gap: "10px",
+                      color: "#E24B4A",
+                      alignItems: "flex-start",
                     }}
                   >
-                    {text("analyzerExposureSafeDescription")}
-                  </p>
-                </div>
+                    <ErrorIcon />
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600 }}>
+                        {text("analyzerExposureFound")}
+                      </p>
+
+                      <p
+                        style={{
+                          margin: "6px 0 0",
+                          fontSize: "13px",
+                          color: t.textSecondary,
+                        }}
+                      >
+                        {text("analyzerExposureCount").replace(
+                          "{count}",
+                          result.breachCount.toLocaleString()
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      color: "#16A34A",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <CheckIcon />
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600 }}>
+                        {text("analyzerExposureSafe")}
+                      </p>
+
+                      <p
+                        style={{
+                          margin: "6px 0 0",
+                          fontSize: "13px",
+                          color: t.textSecondary,
+                        }}
+                      >
+                        {text("analyzerExposureSafeDescription")}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-      {/* ISSUES */}
-      {issues.length > 0 && password && (
-        <div style={card}>
-          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>{text("analyzerIssues")}</p>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {issues.map((issue, i) => (
-              <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: "#E24B4A" }}>{issue}</li>
-            ))}
-          </ul>
+          {/* ISSUES */}
+          {issues.length > 0 && password && (
+            <div style={card}>
+              <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>{text("analyzerIssues")}</p>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {issues.map((issue, i) => (
+                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: "#E24B4A" }}>{issue}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* TIPS */}
+          {advice.length > 0 && password && (
+            <div style={card}>
+              <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>{text("analyzerTips")}</p>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {advice.map((a, i) => (
+                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: t.accent }}>{a}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
         </div>
-      )}
-
-      {/* TIPS */}
-      {advice.length > 0 && password && (
-        <div style={card}>
-          <p style={{ fontSize: "11px", fontWeight: 600, color: t.sectionTitle, textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 10px" }}>{text("analyzerTips")}</p>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {advice.map((a, i) => (
-              <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", padding: "6px 0", borderBottom: `1px solid ${t.listDivider}`, lineHeight: "1.5", color: t.accent }}>{a}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-    </div>
+      </div>
   );
 }
