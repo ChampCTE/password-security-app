@@ -2,7 +2,7 @@
 // password generator component
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { tokens } from "@/app/page";
 import { generatePasswordAPI } from "@/services/passwordGenerator";
 import { getText } from "@/i18n";
@@ -17,6 +17,7 @@ export default function PasswordGenerator({ dark, lang }: { dark: boolean; lang:
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [desktop, setDesktop] = useState(false);
 
   const t = dark ? tokens.dark : tokens.light;
   const text = (key: string) => getText(lang, key);
@@ -27,6 +28,18 @@ export default function PasswordGenerator({ dark, lang }: { dark: boolean; lang:
     { label: text("generatorNumbers"), state: useNumbers, toggle: () => setUseNumbers(!useNumbers) },
     { label: text("generatorSymbols"), state: useSymbols, toggle: () => setUseSymbols(!useSymbols) },
   ];
+
+  useEffect(() => {
+      const check = () => {
+        setDesktop(window.innerWidth >= 900);
+      };
+  
+      check();
+  
+      window.addEventListener("resize", check);
+  
+      return () => window.removeEventListener("resize", check);
+    }, []);
 
   const generatePassword = async () => {
     setLoading(true);
@@ -59,7 +72,14 @@ export default function PasswordGenerator({ dark, lang }: { dark: boolean; lang:
   };
 
   return (
-    <div style={{ maxWidth: "620px", margin: "0 auto", padding: "1.5rem", fontFamily: "system-ui, sans-serif" }}>
+    <div
+      style={{
+        maxWidth: "620px",
+        margin: "0 auto",
+        padding: "1.5rem",
+        fontFamily: "system-ui, sans-serif",
+      }}
+    >
 
       <h2 style={{ fontSize: "20px", fontWeight: 600, display: "flex", alignItems: "center", gap: "10px", marginBottom: "1.25rem", color: t.textPrimary, transition: "color 0.3s" }}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" style={{ width: "22px", height: "22px", color: t.accent }} aria-hidden="true">
