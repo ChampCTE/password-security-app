@@ -3,6 +3,8 @@
 export const zhCN = {
   homeTitle: "密码安全工具",
   homeSubtitle: "分析你的密码强度并生成安全密码！！",
+  tabAnalyzer: "分析器",
+  tabGenerator: "生成器",
   footerBuiltBy: "作者",
   footerViewSource: "查看源码",
   analyzerTitle: "密码分析器",

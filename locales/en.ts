@@ -3,6 +3,8 @@
 export const en = {
   homeTitle: "Password Security Tool",
   homeSubtitle: "Analyze the strength of your passwords and generate secure ones!!",
+  tabAnalyzer: "Analyzer",
+  tabGenerator: "Generator",
   footerBuiltBy: "Built by",
   footerViewSource: "View source",
   analyzerTitle: "Password Analyzer",

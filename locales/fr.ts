@@ -3,6 +3,8 @@
 export const fr = {
   homeTitle: "Outil de sécurité des mots de passe",
   homeSubtitle: "Analyse la robustesse de tes mots de passe et génère des mots de passe sûrs !!",
+  tabAnalyzer: "Analyseur",
+  tabGenerator: "Générateur",
   footerBuiltBy: "Créé par",
   footerViewSource: "Voir le code source",
   analyzerTitle: "Analyseur de mot de passe",

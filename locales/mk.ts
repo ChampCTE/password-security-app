@@ -3,6 +3,8 @@
 export const mk = {
   homeTitle: "Алатка за безбедност на лозинки",
   homeSubtitle: "Анализирај ја јачината на твоите лозинки и генерирај безбедни лозинки!!",
+  tabAnalyzer: "Анализатор",
+  tabGenerator: "Генератор",
   footerBuiltBy: "Направено од",
   footerViewSource: "Погледни го изворниот код",
   analyzerTitle: "Анализатор на лозинки",

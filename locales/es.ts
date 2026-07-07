@@ -2,6 +2,8 @@
 export const es = {
   homeTitle: "Herramienta de seguridad de contraseñas",
   homeSubtitle: "Analiza la fuerza de tus contraseñas y genera contraseñas seguras!!",
+  tabAnalyzer: "Analizador",
+  tabGenerator: "Generador",
   footerBuiltBy: "Hecho por",
   footerViewSource: "Ver código fuente",
   analyzerTitle: "Analizador de contraseñas",

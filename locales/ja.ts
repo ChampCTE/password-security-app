@@ -3,6 +3,8 @@
 export const ja = {
   homeTitle: "パスワードセキュリティツール",
   homeSubtitle: "パスワードの強度を分析し、安全なものを生成します！！",
+  tabAnalyzer: "ド分析",
+  tabGenerator: "ド生成",
   footerBuiltBy: "作成者",
   footerViewSource: "ソースを見る",
   analyzerTitle: "パスワード分析",

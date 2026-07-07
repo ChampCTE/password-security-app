@@ -3,6 +3,8 @@
 export const ko = {
   homeTitle: "비밀번호 보안 도구",
   homeSubtitle: "비밀번호의 강도를 분석하고 안전한 비밀번호를 생성하세요!!",
+  tabAnalyzer: "분석기",
+  tabGenerator: "비밀번호",
   footerBuiltBy: "제작자",
   footerViewSource: "소스 보기",
   analyzerTitle: "비밀번호 분석기",

@@ -18,6 +18,8 @@ export default function Home() {
   const [lang, setLang] = useState<Language>("en");
   const [openLang, setOpenLang] = useState(false);
 
+  const [activeTab, setActiveTab] = useState<"analyzer" | "generator">("analyzer");
+
   const changeLang = (language: Language) => {
     setLanguage(language);
     setLang(language);
@@ -101,16 +103,78 @@ export default function Home() {
           </p>
         </div>
 
-        <PasswordAnalyzer dark={dark} lang={lang} />
+        {/* TABS */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "28px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                background: t.cardBg,
+                border: `1px solid ${t.border}`,
+                borderRadius: "12px",
+                padding: "4px",
+                gap: "4px",
+              }}
+            >
+              <button
+                onClick={() => setActiveTab("analyzer")}
+                style={{
+                  padding: "10px 22px",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  background:
+                    activeTab === "analyzer" ? t.accent : "transparent",
+                  color:
+                    activeTab === "analyzer"
+                      ? (dark ? "#0F172A" : "#FFFFFF")
+                      : t.textPrimary,
+                  fontWeight: 600,
+                  transition: "all .25s",
+                }}
+              >
+                {getText(lang, "tabAnalyzer")}
+              </button>
 
-        <div style={{
-          maxWidth: "620px",
-          margin: "0 auto 0.5rem",
-          borderTop: `1px solid ${t.border}`,
-          transition: "border-color 0.3s",
-        }} />
+              <button
+                onClick={() => setActiveTab("generator")}
+                style={{
+                  padding: "10px 22px",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  background:
+                    activeTab === "generator" ? t.accent : "transparent",
+                  color:
+                    activeTab === "generator"
+                      ? (dark ? "#0F172A" : "#FFFFFF")
+                      : t.textPrimary,
+                  fontWeight: 600,
+                  transition: "all .25s",
+                }}
+              >
+                {getText(lang, "tabGenerator")}
+              </button>
+            </div>
+          </div>
 
-        <PasswordGenerator dark={dark} lang={lang} />
+        <div
+          style={{
+            marginTop: "32px",
+            transition: "all .3s",
+          }}
+        >
+          {activeTab === "analyzer" ? (
+            <PasswordAnalyzer dark={dark} lang={lang} />
+          ) : (
+            <PasswordGenerator dark={dark} lang={lang} />
+          )}
+        </div>
 
       </main>
 
